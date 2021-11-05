@@ -1,6 +1,6 @@
 <flights_data xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:noNamespaceSchemaLocation="flights_data.xsd">
-    { for $flight in doc("test.xml")/root/response/response
+    { for $flight in doc("flights.xml")/root/response/response
     return <flight id="{$flight/hex}">
         <country>{doc("countries.xml")/root/response/response[./code = $flight/flag]/name/text()}</country>
         <position>
