@@ -12,6 +12,9 @@
             \date{\today}
             \maketitle
             \newpage
+            <xsl:choose>
+            <xsl:when test="/flights_data/error"><xsl:value-of select="/flights_data/error"/></xsl:when>
+            <xsl:otherwise>
             \begin{longtable}{| p{2cm} | p{2cm} | p{2cm} | p{1.5cm} | p{4cm} | p{4cm} |}
             \hline
             Flight Id &amp; Country &amp; Position &amp; Status &amp; Departure Airport &amp; Arrival Airport \\
@@ -24,6 +27,8 @@
             <xsl:apply-templates select="/flights_data"/>
             \hline
             \end{longtable}
+            </xsl:otherwise>
+            </xsl:choose>
         \end{document}
     </xsl:template>
 
