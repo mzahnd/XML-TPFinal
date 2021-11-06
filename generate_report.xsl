@@ -1,5 +1,6 @@
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="text" encoding="UTF-8" omit-xml-declaration="yes" indent="no" />
+    <xsl:output method="text" omit-xml-declaration="yes" indent="no" />
+    <xsl:param name="qty" select="qty"/>
     <xsl:template match="/">
         \documentclass[10pt]{article}
         \usepackage{geometry}
@@ -29,9 +30,11 @@
     <xsl:template match="/flights_data">
         <xsl:for-each select="./flight">
             <xsl:sort select="./@id" order="ascending"/>
-            <xsl:value-of select="@id"/> &amp; <xsl:value-of select="./country"/> &amp;
-            (<xsl:value-of select="./position/lat"/>, <xsl:value-of select="./position/lng"/>) &amp; <xsl:value-of select="./status"/>
-            &amp; <xsl:value-of select="./departure_airport/name"/> &amp; <xsl:value-of select="./arrival_airport/name"/> \\
+            <xsl:if test="not(position() > $qty)">    
+                <xsl:value-of select="@id"/> &amp; <xsl:value-of select="./country"/> &amp;
+                (<xsl:value-of select="./position/lat"/>, <xsl:value-of select="./position/lng"/>) &amp; <xsl:value-of select="./status"/>
+                &amp; <xsl:value-of select="./departure_airport/name"/> &amp; <xsl:value-of select="./arrival_airport/name"/> \\
+            </xsl:if>
         </xsl:for-each>
     </xsl:template>
 
