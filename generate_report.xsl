@@ -27,15 +27,38 @@
         \end{document}
     </xsl:template>
 
+    <xsl:template name="table-column-field">
+        <xsl:param name="query"/>
+        <xsl:choose>
+            <xsl:when test="not($query) or $query = ''">\textit{No information}</xsl:when>
+            <xsl:otherwise><xsl:value-of select="$query"/></xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+
     <xsl:template match="/flights_data">
         <xsl:for-each select="./flight">
             <xsl:sort select="./@id" order="ascending"/>
             <xsl:if test="not(position() > $qty)">    
-                <xsl:value-of select="@id"/> &amp; <xsl:value-of select="./country"/> &amp;
-                (<xsl:value-of select="./position/lat"/>, <xsl:value-of select="./position/lng"/>) &amp; <xsl:value-of select="./status"/>
-                &amp; <xsl:value-of select="./departure_airport/name"/> &amp; <xsl:value-of select="./arrival_airport/name"/> \\
+                <xsl:value-of select="@id"/> &amp; 
+                <xsl:call-template name="table-column-field">
+                <xsl:with-param name="query" select="./country"/>
+                </xsl:call-template> &amp;
+                (<xsl:call-template name="table-column-field">
+                <xsl:with-param name="query" select="./position/lat"/>
+                </xsl:call-template>,
+                <xsl:call-template name="table-column-field">
+                <xsl:with-param name="query" select="./position/lng"/>
+                </xsl:call-template>) &amp;
+                <xsl:call-template name="table-column-field">
+                <xsl:with-param name="query" select="./status"/>
+                </xsl:call-template> &amp;
+                <xsl:call-template name="table-column-field">
+                <xsl:with-param name="query" select="./departure_airport/name"/>
+                </xsl:call-template> &amp;
+                <xsl:call-template name="table-column-field">
+                <xsl:with-param name="query" select="./arrival_airport/name"/>
+                </xsl:call-template> \\
             </xsl:if>
         </xsl:for-each>
     </xsl:template>
-
 </xsl:stylesheet>
