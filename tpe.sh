@@ -83,7 +83,7 @@ function gen_tex() {
     echo "xslt with qty=${MAX}"
 
     # XQuery
-    java net.sf.saxon.Query "$FXQ" !encoding="UTF-16" > "$FXSD_XML"
+    java net.sf.saxon.Query "$FXQ" !encoding="UTF-16" !indent="yes" > "$FXSD_XML"
 
     # XSLT
     [ $MAX -gt 0 ] && xslt_with_params="$xslt_with_params qty=$MAX"
