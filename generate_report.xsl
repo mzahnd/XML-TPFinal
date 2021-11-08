@@ -4,6 +4,7 @@
     <xsl:template match="/">
         \documentclass[10pt]{article}
         \usepackage{geometry}
+        \usepackage{xcolor}
         \geometry{a4paper,total={170mm,257mm},left=20mm,top=20mm,}
         \usepackage{longtable}
         \begin{document}
@@ -35,7 +36,9 @@
     <xsl:template name="table-column-field">
         <xsl:param name="query"/>
         <xsl:choose>
-            <xsl:when test="not($query) or $query = ''">\textit{No information}</xsl:when>
+            <xsl:when
+            test="not($query) or $query = ''"
+            >{\color{darkgray}\textit{No information}}</xsl:when>
             <xsl:otherwise><xsl:value-of select="$query"/></xsl:otherwise>
         </xsl:choose>
     </xsl:template>
