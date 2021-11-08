@@ -32,7 +32,8 @@ OPTIONS:
     [-]verbose      
     -v              Print extra information to stdout.
 
-    [-]h            This message.
+    [-]h
+    [--]help        This message.
 EOF
 }
 
