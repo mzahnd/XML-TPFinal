@@ -10,13 +10,15 @@ readonly FFLIGHTS='flights.xml'
 
 readonly FXSLT='generate_report.xsl'
 readonly FXQ='extract_data.xq'
+readonly FXSD='flights_data.xsd'
 readonly FXSD_XML='flights_data.xml'
 
 readonly TEX_OUTPUT='report.tex'
 
-
 VERBOSE=false
 FETCH=true
+TRANS_XSL=true
+QUERY_XQ=true
 MAX=0
 
 function usage() {
@@ -29,12 +31,26 @@ OPTIONS:
     [-]no-fetch     Do not fetch new data from AirLabs Data API. Uses only
                     local files, failing if at least one does not exist.
 
+    [-]only-xsl     Only performs the XSL transformation and generates the
+                    report file. Implies 'no-fetch'.
+
+    [-]only-query   Only performs the xQuery query and generates the flight's
+                    data file.
+
     [-]verbose      
     -v              Print extra information to stdout.
 
     [-]h
     [--]help        This message.
 EOF
+}
+
+function is_readable() {
+    [ ! -r "$1" ] \
+        && echo "Missing file '${1}' or wrong permissions." \
+        && return 1
+
+    return 0
 }
 
 # Get XML files from AirLabs API
@@ -67,14 +83,18 @@ function fetch_data() {
 }
 
 # Needed files have read permission
-function check_files() {
+function check_essential_files() {
     local ret=0
+    local files=("$FXSLT" "$FXQ")
 
-    for fname in "$FAIRPORTS" "$FCOUNTRIES" "$FFLIGHTS"; do
-        if [ ! -r "$fname" ]; then
-           echo "Missing XML file '${fname}' or wrong permissions."
+    # Only the query needs this files.
+    ($QUERY_XQ) && files+=("$FAIRPORTS" "$FCOUNTRIES" "$FFLIGHTS" "$FXSD")
+
+    for fname in ${files[@]}
+    do
+        if ! is_readable "$fname"; then
             # Keep testing files, so the user knows how many of them is missing
-           ret=1
+            ret=1
         fi
     done
 
@@ -85,6 +105,9 @@ function check_files() {
 # Encodes in UTF-16 and indents the resulting XML
 function ev_xquery()
 {
+    # Perform query?
+    (! $QUERY_XQ) && return 0
+
     ($VERBOSE) && echo "Evaluating xQuery query in '$FXQ'..."
     if ! java net.sf.saxon.Query    \
         "$FXQ"                      \
@@ -108,11 +131,18 @@ function transform_xslt()
 {
     local xslt_with_params="$FXSLT"
 
+    # Perform transformation?
+    (! $TRANS_XSL) && return 0
+
+    # Needed files
+    ! is_readable "$FXSD_XML" && return 1
+
     # Append 'qty' to XSLT command
     [ $MAX -gt 0 ] && xslt_with_params="$xslt_with_params qty=$MAX"
 
     ($VERBOSE) && echo -n "Executing XSLT transformation by calling "
     ($VERBOSE) && echo "'$xslt_with_params' with '$FXSD_XML'..."
+
     if ! java net.sf.saxon.Transform    \
         -s:"$FXSD_XML"                  \
         -xsl:$xslt_with_params          \
@@ -138,6 +168,15 @@ for (( i=1; i <= ${#}; i++ )); do
         ?(-)no-fetch)
             FETCH=false
             ;;
+        ?(-)only-xsl)
+            FETCH=false
+            TRANS_XSL=true
+            QUERY_XQ=false
+            ;;
+        ?(-)only-query)
+            TRANS_XSL=false
+            QUERY_XQ=true
+            ;;
         ?(-)verbose|-v)
             VERBOSE=true
             ;;
@@ -155,7 +194,7 @@ fi
 
 # Verify files and run xQuery query and XSLT transformation.
 [ $? -eq 0 ] \
-    && check_files && ev_xquery && transform_xslt \
+    && check_essential_files && ev_xquery && transform_xslt \
     || (echo "Aborted script execution."; exit 1)
 
 exit $?
