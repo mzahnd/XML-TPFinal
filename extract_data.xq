@@ -1,51 +1,59 @@
+declare function local:getAirCountry($iata as xs:string) as node()
+{
+    <country>{doc("countries.xml")/root/response/response[./code = doc("airports.xml")/root/response/response[./iata_code = $iata]/country_code]/name/text()}</country>
+};
 
-('&#xa;', <flights_data>&#xa; {
-  for $flight in doc("test.xml")/root/response/response return
-    if (fn:exists($flight/hex) and 
+declare function local:getAirName($iata as xs:string) as node()
+{
+    (: I use /text() because if there is no airport name listed, instead of returning
+        an empty sequence (which causes errors), it returns an empty node :)
+    <name>doc("airports.xml")/root/response/response[./iata_code = $iata]/name/text()</name>
+};
+
+declare function local:getDep($flight as element(response)) as node()
+{
+    <departure_airport>
+        {local:getAirCountry($flight/dep_iata[position() = 1])}
+        {local:getAirName($flight/dep_iata[position() = 1])}
+    </departure_airport>
+};
+
+declare function local:getArr($flight as element(response)) as node()
+{
+    <arrival_airport>
+        {local:getAirCountry($flight/arr_iata[position() = 1])}
+        {local:getAirName($flight/arr_iata[position() = 1])}
+    </arrival_airport>
+};
+
+declare function local:getFlight($flight as element(response)) as node()
+{
+    <flight id="{$flight/hex}">
+        <country>{ doc("countries.xml")/root/response/response[./code = $flight/flag]/name/text() }</country>
+        <position>
+            {$flight/lat}
+            {$flight/lng}
+        </position>
+        {$flight/status}
+        {if (fn:exists($flight/dep_iata))
+            then local:getDep($flight)
+            else ()}
+        {if (fn:exists($flight/arr_iata))
+            then local:getArr($flight)
+            else ()}
+    </flight>
+};
+
+<flights_data>
+{
+    if (every $flight in doc("flights.xml")/root/response/response satisfies 
+        (fn:exists($flight/hex) and 
         fn:exists($flight/lat) and 
         fn:exists($flight/lng) and 
-        fn:exists($flight/status)) then
-    (
-      <flight id="{$flight/hex}">&#xa;
-        <country>{
-          doc("countries.xml")/root/response/response[./code = $flight/flag]/name/text()
-        }</country>&#xa;
-        <position>&#xa;
-            <lat>{$flight/lat/text()}</lat>&#xa;
-            <lng>{$flight/lng/text()}</lng>&#xa;
-        </position>&#xa;
-        <status>{$flight/status/text()}</status>&#xa;
-        {
-          if (fn:exists($flight/dep_iata)) then
-          (
-            <departure_airport>&#xa;
-              <country>{
-                doc("countries.xml")/root/response/response[./code = doc("airports.xml")/root/response/response[./iata_code = $flight/dep_iata[position() = 1]]/country_code]/name/text()
-              }</country>&#xa;
-              <name>{
-                doc("airports.xml")/root/response/response[./iata_code = $flight/dep_iata[position() = 1]]/name/text()
-              }</name>&#xa;
-            </departure_airport>
-          )
-          else ()
-        }&#xa;
-        {
-          if (fn:exists($flight/arr_iata)) then
-            (<arrival_airport>&#xa;
-            <country>{
-              doc("countries.xml")/root/response/response[./code = doc("airports.xml")/root/response/response[./iata_code = $flight/arr_iata[position() = 1]]/country_code]/name/text()
-            }</country>&#xa;
-            <name>{
-              doc("airports.xml")/root/response/response[./iata_code = $flight/arr_iata[position() = 1]]/name/text()
-            }</name>&#xa;
-            </arrival_airport>)
-          else ()
-        }&#xa;
-        </flight>,'&#xa;'
-    )
-    else
-    (
-      <error>Unknown error when retrieving data.</error>
-    )
-  }
-</flights_data>)
+        fn:exists($flight/status)))
+    then
+        for $flight in doc("flights.xml")/root/response/response
+        return local:getFlight($flight)
+    else <error>Unknown error when retrieving data.</error>
+}
+</flights_data>
