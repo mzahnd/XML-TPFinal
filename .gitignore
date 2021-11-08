@@ -1,8 +1,8 @@
 apikey.txt
 
-airports.xml
-countries.xml
-flights.xml
+airports.*
+countries.*
+flights.*
 flights_data.xml
 report.tex
 
