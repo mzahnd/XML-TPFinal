@@ -7,7 +7,7 @@ declare function local:getAirName($iata as xs:string) as node()
 {
     (: I use /text() because if there is no airport name listed, instead of returning
         an empty sequence (which causes errors), it returns an empty node :)
-    <name>doc("airports.xml")/root/response/response[./iata_code = $iata]/name/text()</name>
+    <name>{doc("airports.xml")/root/response/response[./iata_code = $iata]/name/text()}</name>
 };
 
 declare function local:getDep($flight as element(response)) as node()
