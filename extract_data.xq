@@ -1,6 +1,6 @@
 
 ('&#xa;', <flights_data>&#xa; {
-  for $flight in doc("flights.xml")/root/response/response return
+  for $flight in doc("test.xml")/root/response/response return
     if (fn:exists($flight/hex) and 
         fn:exists($flight/lat) and 
         fn:exists($flight/lng) and 
@@ -20,10 +20,10 @@
           (
             <departure_airport>&#xa;
               <country>{
-                doc("countries.xml")/root/response/response[./code = doc("airports.xml")/root/response/response[./iata_code = $flight/dep_iata]/country_code]/name/text()
+                doc("countries.xml")/root/response/response[./code = doc("airports.xml")/root/response/response[./iata_code = $flight/dep_iata[position() = 1]]/country_code]/name/text()
               }</country>&#xa;
               <name>{
-                doc("airports.xml")/root/response/response[./iata_code = $flight/dep_iata]/name/text()
+                doc("airports.xml")/root/response/response[./iata_code = $flight/dep_iata[position() = 1]]/name/text()
               }</name>&#xa;
             </departure_airport>
           )
@@ -33,10 +33,10 @@
           if (fn:exists($flight/arr_iata)) then
             (<arrival_airport>&#xa;
             <country>{
-              doc("countries.xml")/root/response/response[./code = doc("airports.xml")/root/response/response[./iata_code = $flight/arr_iata]/country_code]/name/text()
+              doc("countries.xml")/root/response/response[./code = doc("airports.xml")/root/response/response[./iata_code = $flight/arr_iata[position() = 1]]/country_code]/name/text()
             }</country>&#xa;
             <name>{
-              doc("airports.xml")/root/response/response[./iata_code = $flight/arr_iata]/name/text()
+              doc("airports.xml")/root/response/response[./iata_code = $flight/arr_iata[position() = 1]]/name/text()
             }</name>&#xa;
             </arrival_airport>)
           else ()
