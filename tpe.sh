@@ -157,7 +157,7 @@ function xsd_check()
         return 1
     fi
 
-    echo "Success."
+    echo "Success. File '$FXSD_XML' validated with '$FXSD'."
 
     return 0
 }
