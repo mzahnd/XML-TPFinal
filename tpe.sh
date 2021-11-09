@@ -111,7 +111,6 @@ function ev_xquery()
     ($VERBOSE) && echo "Evaluating xQuery query in '$FXQ'..."
     if ! java net.sf.saxon.Query    \
         "$FXQ"                      \
-        !encoding="UTF-16"          \
         !indent="yes"               \
         > "$FXSD_XML"                                  
         then
