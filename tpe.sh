@@ -147,6 +147,7 @@ function xsd_check()
     # Needed files
     ! is_readable "$FXSD_XML" && return 1
 
+    echo "Verifying file '$FXSD_XML'..."
     err_msg="$(java sax.Writer -v -n -s -f "$FXSD_XML" 2>&1 1> /dev/null)"
 
     if [ -n "$err_msg" ]
@@ -155,6 +156,8 @@ function xsd_check()
         echo "XSD Verification failed."
         return 1
     fi
+
+    echo "Success."
 
     return 0
 }
