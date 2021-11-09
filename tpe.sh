@@ -40,7 +40,7 @@ OPTIONS:
     [-]only-xsl     Only performs the XSL transformation and generates the
                     report file. Implies 'no-fetch'.
 
-    [-]only-query   Only performs the xQuery query and generates the flight's
+    [-]only-query   Only performs the XQuery query and generates the flight's
                     data file.
 
     [-]verbose      
@@ -109,14 +109,14 @@ function check_essential_files() {
     return $ret
 }
 
-# xQuery query using Saxon
+# XQuery query using Saxon
 # Encodes in UTF-16 and indents the resulting XML
 function ev_xquery()
 {
     # Perform query?
     (! $QUERY_XQ) && return 0
 
-    ($VERBOSE) && echo "Evaluating xQuery query in '$FXQ'..."
+    ($VERBOSE) && echo "Evaluating XQuery query in '$FXQ'..."
     if ! java net.sf.saxon.Query    \
         "$FXQ"                      \
         !indent="yes"               \
@@ -226,7 +226,7 @@ if ( $FETCH ); then
     fetch_data
 fi
 
-# Verify files and run xQuery query and XSLT transformation.
+# Verify files and run XQuery query and XSLT transformation.
 [ $? -eq 0 ] \
     && check_essential_files && ev_xquery && xsd_check && transform_xslt \
     || (echo "Aborted script execution."; exit 1)
