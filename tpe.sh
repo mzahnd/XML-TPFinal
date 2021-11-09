@@ -63,20 +63,23 @@ function is_readable() {
 function fetch_data() {
     local ret=0
 
+    local curl_args=("--silent" "--show-error")
+    ($VERBOSE) && curl_args=()
+
     ($VERBOSE) && echo "Fetching '$FAIRPORTS'..."
-    curl \
+    curl "${curl_args[@]}" \
         "https://airlabs.co/api/v9/airports.xml?api_key=${AIRLABS_API_KEY}" \
         > "$FAIRPORTS"
     [ $? -ne 0 ] && ret=1 && echo "Could not fetch '$FAIRPORTS'."
     
     ($VERBOSE) && echo "Fetching '$FCOUNTRIES'..."
-    curl \
+    curl "${curl_args[@]}" \
         "https://airlabs.co/api/v9/countries.xml?api_key=${AIRLABS_API_KEY}" \
         > "$FCOUNTRIES"
     [ $? -ne 0 ] && ret=1 && echo "Could not fetch '$FCOUNTRIES'."
     
     ($VERBOSE) && echo "Fetching '$FFLIGHTS'..."
-    curl \
+    curl "${curl_args[@]}" \
         "https://airlabs.co/api/v9/flights.xml?api_key=${AIRLABS_API_KEY}" \
         > "$FFLIGHTS"
     [ $? -ne 0 ] && ret=1 && echo "Could not fetch '$FFLIGHTS'."
