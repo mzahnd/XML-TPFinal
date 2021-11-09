@@ -44,7 +44,8 @@ declare function local:getFlight($flight as element(response)) as node()
     </flight>
 };
 
-<flights_data>
+<flights_data xmlns:xsi = "http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="flights_data.xsd">
 {
     if (every $flight in doc("flights.xml")/root/response/response satisfies 
         (fn:exists($flight/hex) and 

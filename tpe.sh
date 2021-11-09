@@ -17,6 +17,7 @@ readonly TEX_OUTPUT='report.tex'
 
 VERBOSE=false
 FETCH=true
+VERIFY_XSD=false
 TRANS_XSL=true
 QUERY_XQ=true
 MAX=0
@@ -25,8 +26,13 @@ function usage() {
 cat <<EOF
 Usage: ${0##*/} [OPTION]
 
+This script requires a file called 'apikey.txt' with your AirLabs API key to
+run.
+
 OPTIONS:
     [-]qty=N        Maximum number of flights to include in the final document.
+
+    [-]xsd-check    Use '$FXSD' XSD file to validate the query output.
 
     [-]no-fetch     Do not fetch new data from AirLabs Data API. Uses only
                     local files, failing if at least one does not exist.
@@ -88,7 +94,9 @@ function check_essential_files() {
     local files=("$FXSLT" "$FXQ")
 
     # Only the query needs this files.
-    ($QUERY_XQ) && files+=("$FAIRPORTS" "$FCOUNTRIES" "$FFLIGHTS" "$FXSD")
+    ($QUERY_XQ) && files+=("$FAIRPORTS" "$FCOUNTRIES" "$FFLIGHTS")
+
+    ($VERIFY_XSD || $QUERY_XQ) && files+=("$FXSD")
 
     for fname in ${files[@]}
     do
@@ -121,6 +129,29 @@ function ev_xquery()
     fi
     
     ($VERBOSE) && echo "Successfully generated file '$FXSD_XML'"
+
+    return 0
+}
+
+# Verify output XML from XQuery using a XSD
+function xsd_check()
+{
+    # Perform check?
+    (! $VERIFY_XSD) && return 0
+
+    local err_msg=""
+
+    # Needed files
+    ! is_readable "$FXSD_XML" && return 1
+
+    err_msg="$(java sax.Writer -v -n -s -f "$FXSD_XML" 2>&1 1> /dev/null)"
+
+    if [ -n "$err_msg" ]
+    then
+        echo "$err_msg"
+        echo "XSD Verification failed."
+        return 1
+    fi
 
     return 0
 }
@@ -164,6 +195,9 @@ for (( i=1; i <= ${#}; i++ )); do
         ?(-)qty\=+([0-9]))
             MAX="$(echo "${!i,,}" | awk -F= '{print $2}')"
             ;;
+        ?(-)xsd-check)
+            VERIFY_XSD=true
+            ;;
         ?(-)no-fetch)
             FETCH=false
             ;;
@@ -188,12 +222,13 @@ done
 
 # Fetch data from the API
 if ( $FETCH ); then
+    [ -z "$AIRLABS_API_KEY" ] && echo "File 'apikey.txt' not found." && exit 1
     fetch_data
 fi
 
 # Verify files and run xQuery query and XSLT transformation.
 [ $? -eq 0 ] \
-    && check_essential_files && ev_xquery && transform_xslt \
+    && check_essential_files && ev_xquery && xsd_check && transform_xslt \
     || (echo "Aborted script execution."; exit 1)
 
 exit $?
