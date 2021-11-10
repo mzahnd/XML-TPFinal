@@ -2,8 +2,16 @@
 
 shopt -s extglob
 
-# If API Key was not exported, try to read it from apikey.txt
-[ -z "$AIRLABS_API_KEY" ] && readonly AIRLABS_API_KEY="$(cat apikey.txt)"
+# AirLabs API Key
+[ -z "$AIRLABS_API_KEY" ]
+
+if [ -z "$AIRLABS_API_KEY" ]; then
+    echo -n "Environment variable AIRLABS_API_KEY not set. "
+    echo "Please provide an API key using"
+    echo "export AIRLABS_API_KEY='<api-key-here>'"
+
+    exit 1
+fi
 
 readonly FAIRPORTS='airports.xml'
 readonly FCOUNTRIES='countries.xml'
@@ -27,8 +35,13 @@ function usage() {
 cat <<EOF
 Usage: ${0##*/} [OPTION]
 
-This script requires a file called 'apikey.txt' with your AirLabs API key to
-run.
+The script requires an environment variable calleed AIRLABS_API_KEY with
+AirLabs provided API key.
+
+It can be provided using the following command before running the script:
+
+    export AIRLABS_API_KEY='<api-key-here>'
+
 
 OPTIONS:
     [-]qty=N        Maximum number of flights to include in the final document.
@@ -229,7 +242,6 @@ done
 
 # Fetch data from the API
 if ( $FETCH ); then
-    [ -z "$AIRLABS_API_KEY" ] && echo "File 'apikey.txt' not found." && exit 1
     fetch_data
 fi
 
