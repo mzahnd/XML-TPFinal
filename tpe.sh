@@ -2,7 +2,8 @@
 
 shopt -s extglob
 
-readonly AIRLABS_API_KEY="$(cat apikey.txt)"
+# If API Key was not exported, try to read it from apikey.txt
+[ -z "$AIRLABS_API_KEY" ] && readonly AIRLABS_API_KEY="$(cat apikey.txt)"
 
 readonly FAIRPORTS='airports.xml'
 readonly FCOUNTRIES='countries.xml'
